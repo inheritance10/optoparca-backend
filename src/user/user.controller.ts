@@ -29,7 +29,8 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Get('/:id')
-    async geyByIdUser() {
-        return this.userService.getAllUsers();
+    async getByIdUser(@Param() id: number) {
+
+        return this.userService.getByIdUser(id);
     }
 }
