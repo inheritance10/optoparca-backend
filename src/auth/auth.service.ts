@@ -7,51 +7,52 @@ import {Repository} from "typeorm";
 
 @Injectable()
 export class AuthService {
-  constructor(
-      @InjectRepository(User)
-      private readonly userRepository: Repository<User>,
-    private jwtService : JwtService
-  ) {}
-
-
-  async register(body: any): Promise<User> {
-    const { name, email, password, username, lastname } = body;
-
-    // Şifreyi hashle
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    // Yeni kullanıcıyı oluştur
-    const newUser = this.userRepository.create({
-      name,
-      email,
-      username,
-      lastname,
-      password: hashPassword
-    });
-
-    // Kullanıcıyı veritabanına kaydet
-    return await this.userRepository.save(newUser);
-  }
-
-  async login(body: any): Promise<{ token: string, user: User}> {
-
-    const {email, password} = body;
-
-    const user = await this.userRepository.findOne({ where: { email: email } });
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+    constructor(
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+        private jwtService: JwtService
+    ) {
     }
 
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordMatched) {
-      throw new UnauthorizedException('Invalid email or password');
+    async register(body: any): Promise<any> {
+        const {name, email, password, username, lastname} = body;
+
+        const isUser = await this.userRepository.findOne({where: {email: email}});
+        if (isUser) return {error: 'Bu email adresi ile daha önce kayıt olunmuş', statusCode: 400};
+
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        const newUser = this.userRepository.create({
+            name,
+            email,
+            username,
+            lastname,
+            password: hashPassword
+        });
+
+        return await this.userRepository.save(newUser);
     }
 
-    const token = this.jwtService.sign({ id: user.id });
+    async login(body: any): Promise<{ token: string, user: User }> {
 
-    return { token: token, user: user};
-  }
+        const {email, password} = body;
+
+        const user = await this.userRepository.findOne({where: {email: email}});
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid email or password');
+        }
+
+        const isPasswordMatched = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordMatched) {
+            throw new UnauthorizedException('Invalid email or password');
+        }
+
+        const token = this.jwtService.sign({id: user.id});
+
+        return {token: token, user: user};
+    }
 
 }

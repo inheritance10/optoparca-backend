@@ -41,8 +41,6 @@ export class UserService {
         } catch (error) {
             throw new Error(error)
         }
-
-
     }
 
     async getByIdUser(id: number): Promise<{ user: User } | { error: string, statusCode: number }> {
