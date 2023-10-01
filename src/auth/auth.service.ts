@@ -41,13 +41,13 @@ export class AuthService {
         const user = await this.userRepository.findOne({where: {email: email}});
 
         if (!user) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException('Geçersiz email bilgisi girdiniz.');
         }
 
         const isPasswordMatched = await bcrypt.compare(password, user.password);
 
         if (!isPasswordMatched) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException('Geçersiz şifre girdiniz.');
         }
 
         const token = this.jwtService.sign({id: user.id});
